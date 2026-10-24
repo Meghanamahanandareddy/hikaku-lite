@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlertController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\StatsController;
@@ -12,6 +13,9 @@ Route::get('/', function () {
 Route::get('/api/stats', [StatsController::class, 'index']);
 Route::get('/api/hotels', [HotelController::class, 'index']);
 Route::get('/api/hotels/{hotel}', [HotelController::class, 'show'])->whereNumber('hotel');
+
+// Price drop alerts (max 10 requests per minute per visitor)
+Route::post('/api/alerts', [AlertController::class, 'store'])->middleware('throttle:10,1');
 
 // Click-out to a (mock) booking site
 Route::get('/go/{hotel}/{slug}', [PartnerController::class, 'show'])->whereNumber('hotel');

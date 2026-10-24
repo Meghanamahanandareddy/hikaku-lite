@@ -13,3 +13,9 @@ Schedule::command('prices:ingest')
     ->dailyAt('02:00')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/ingest.log'));
+
+// Then check the price alerts at 2:10 AM and email anyone whose target was reached
+Schedule::command('alerts:check')
+    ->dailyAt('02:10')
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/alerts.log'));

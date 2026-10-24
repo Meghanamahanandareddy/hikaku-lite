@@ -53,6 +53,27 @@
         return '/img/img_' + ((id % 5) + 1) + '.jpg';
     }
 
+    function getCookie(name) {
+        var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return match ? decodeURIComponent(match[1]) : '';
+    }
+
+    function savedEmail() {
+        try {
+            return localStorage.getItem('hk_email') || '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function saveEmail(email) {
+        try {
+            localStorage.setItem('hk_email', email);
+        } catch (e) {
+            // storage unavailable: ignore
+        }
+    }
+
     function getParams(page) {
         var params = { page: page };
 
@@ -269,6 +290,31 @@
         }
     }
 
+    function alertBoxHtml(d) {
+        return '' +
+            '<div class="p-3 rounded bg-light mb-4">' +
+                '<h5 class="mb-1"><span class="fa fa-bell-o"></span> Get a price drop alert</h5>' +
+                '<p class="text-muted small mb-3">Today\'s best price is ' + yen(d.stats.current) +
+                '. Tell us your target and we\'ll email you when it falls to that price or lower.</p>' +
+                '<form id="alert-form" novalidate data-hotel-id="' + d.hotel.id + '">' +
+                    '<div class="form-row">' +
+                        '<div class="col-12 col-md-5 mb-2">' +
+                            '<input type="email" id="alert-email" class="form-control" placeholder="Your email" ' +
+                            'autocomplete="email" value="' + esc(savedEmail()) + '" aria-label="Your email">' +
+                        '</div>' +
+                        '<div class="col-7 col-md-4 mb-2">' +
+                            '<input type="number" id="alert-price" class="form-control" placeholder="Target price (JPY)" ' +
+                            'min="1000" step="100" aria-label="Target price in yen">' +
+                        '</div>' +
+                        '<div class="col-5 col-md-3 mb-2">' +
+                            '<button type="submit" class="btn btn-primary btn-block" id="alert-btn">Set alert</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div id="alert-msg" class="small" role="status" aria-live="polite"></div>' +
+                '</form>' +
+            '</div>';
+    }
+
     function modalHtml(d) {
         var h = d.hotel;
         var rows = '';
@@ -297,6 +343,7 @@
                 '</div>' +
                 '<h5 class="mb-2">Today\'s prices <small class="text-muted">(click a site to open it)</small></h5>' +
                 '<div class="source-list mb-4" style="margin-top:6px">' + rows + '</div>' +
+                alertBoxHtml(d) +
                 '<div class="d-flex justify-content-between align-items-center flex-wrap">' +
                     '<h5 class="mb-2">Price trend</h5>' +
                     '<div class="range-tabs">' +
@@ -412,6 +459,66 @@
         window.open(url, '_blank', 'noopener');
     }
 
+    /* ---------- Price alert form ---------- */
+
+    function showAlertMessage(text, type) {
+        $('#alert-msg')
+            .css('color', type === 'ok' ? '#1a8f4c' : '#c92a2a')
+            .text(text);
+    }
+
+    function submitAlert($alertForm) {
+        var email = $.trim($('#alert-email').val());
+        var price = $.trim($('#alert-price').val());
+        var $btn = $('#alert-btn');
+
+        if (!email || email.indexOf('@') < 1) {
+            showAlertMessage('Please enter a valid email address.', 'error');
+            return;
+        }
+        if (!price || Number(price) < 1000) {
+            showAlertMessage('Please enter a target price of at least \u00A51,000.', 'error');
+            return;
+        }
+
+        $btn.prop('disabled', true).text('Saving...');
+        showAlertMessage('', 'ok');
+
+        $.ajax({
+            url: '/api/alerts',
+            method: 'POST',
+            dataType: 'json',
+            headers: { 'X-XSRF-TOKEN': getCookie('XSRF-TOKEN') },
+            data: {
+                hotel_id: $alertForm.data('hotel-id'),
+                email: email,
+                target_price: price
+            }
+        })
+        .done(function (resp) {
+            saveEmail(email);
+            showAlertMessage(resp.message, 'ok');
+        })
+        .fail(function (xhr) {
+            var message = 'Could not save your alert. Please try again.';
+
+            if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                var errors = xhr.responseJSON.errors;
+                var firstKey = Object.keys(errors)[0];
+                message = errors[firstKey][0];
+            } else if (xhr.status === 419) {
+                message = 'Your session expired. Please refresh the page and try again.';
+            } else if (xhr.status === 429) {
+                message = 'Too many attempts. Please wait a minute and try again.';
+            }
+
+            showAlertMessage(message, 'error');
+        })
+        .always(function () {
+            $btn.prop('disabled', false).text('Set alert');
+        });
+    }
+
     /* ---------- Events ---------- */
 
     // Search button (and the Enter key inside the form)
@@ -469,6 +576,12 @@
         }
         $(this).addClass('active').siblings().removeClass('active');
         drawChart(detailData, parseInt($(this).data('days'), 10));
+    });
+
+    // Price alert form inside the popup
+    $modalArea.on('submit', '#alert-form', function (e) {
+        e.preventDefault();
+        submitAlert($(this));
     });
 
     $modal.on('hidden.bs.modal', function () {
