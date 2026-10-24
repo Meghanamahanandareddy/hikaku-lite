@@ -62,4 +62,14 @@ class AlertController extends Controller
             ],
         ], $alert->wasRecentlyCreated ? 201 : 200);
     }
+
+    /**
+     * One-click unsubscribe from the link in the email (signed URL).
+     */
+    public function unsubscribe(PriceAlert $alert)
+    {
+        $alert->update(['is_active' => false]);
+
+        return view('unsubscribed', ['hotel' => $alert->hotel]);
+    }
 }

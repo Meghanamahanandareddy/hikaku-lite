@@ -40,7 +40,9 @@
                 </tr>
                 <tr>
                     <td style="padding:16px 28px;background:#fafbfc;font-size:12px;color:#aab2bb;">
-                        Hikaku Lite is a demo project with mock data.
+                        Hikaku Lite is a demo project with mock data.<br>
+                        You received this because you set a price alert.
+                        <a href="{{ $unsubscribeUrl }}" style="color:#e61c5d;">Unsubscribe from this alert</a>
                     </td>
                 </tr>
             </table>

@@ -7,9 +7,12 @@ use App\Models\PriceAlert;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Support\Facades\URL;
 
 class PriceDropAlert extends Mailable
 {
+    public string $unsubscribeUrl;
+
     public function __construct(
         public PriceAlert $alert,
         public Hotel $hotel,
@@ -17,6 +20,7 @@ class PriceDropAlert extends Mailable
         public string $sourceName,
         public string $sourceUrl,
     ) {
+        $this->unsubscribeUrl = URL::signedRoute('alerts.unsubscribe', ['alert' => $alert->id]);
     }
 
     public function envelope(): Envelope
