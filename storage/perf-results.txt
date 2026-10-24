@@ -1,0 +1,32 @@
+=== before | 2026-10-24 07:29 | 907,280 rows | MySQL 8.4.3 ===
+Hotel list (default sort)    median   3987.5 ms | fastest   3820.4 | slowest   4616.2 | 6 queries | db   3982.8 ms
+Hotel list, Tokyo 4-star     median   4037.7 ms | fastest   3851.0 | slowest   4719.2 | 6 queries | db   4034.2 ms
+Hotel list, name search      median   3919.3 ms | fastest   3822.1 | slowest   4242.4 | 6 queries | db   3915.3 ms
+Hotel list, sort by rating   median   3918.4 ms | fastest   3779.9 | slowest   5204.5 | 6 queries | db   3914.5 ms
+Hotel detail + chart data    median      6.6 ms | fastest      5.9 | slowest      8.5 | 2 queries | db      2.6 ms
+Dashboard stats              median   2361.1 ms | fastest   2306.5 | slowest   2725.9 | 5 queries | db   2332.0 ms
+
+=== before | 2026-10-24 07:34 | 907,280 rows | MySQL 8.4.3 ===
+Hotel list (default sort)    median   3918.9 ms | fastest   3790.8 | slowest   4432.3 | 6 queries | db   3915.2 ms
+Hotel list, Tokyo 4-star     median   3938.7 ms | fastest   3849.2 | slowest   4047.1 | 6 queries | db   3934.6 ms
+Hotel list, name search      median   3968.5 ms | fastest   3838.6 | slowest   4423.9 | 6 queries | db   3964.5 ms
+Hotel list, sort by rating   median   3866.4 ms | fastest   3798.9 | slowest   4573.8 | 6 queries | db   3862.3 ms
+Hotel detail + chart data    median      6.1 ms | fastest      5.5 | slowest      8.8 | 2 queries | db      2.7 ms
+Dashboard stats              median   2324.1 ms | fastest   2241.5 | slowest   2638.4 | 5 queries | db   2292.5 ms
+
+=== after-index | 2026-10-24 07:38 | 907,280 rows | MySQL 8.4.3 ===
+Hotel list (default sort)    median    397.9 ms | fastest    370.0 | slowest    428.7 | 6 queries | db    393.8 ms
+Hotel list, Tokyo 4-star     median    393.7 ms | fastest    376.7 | slowest    418.0 | 6 queries | db    389.2 ms
+Hotel list, name search      median    390.7 ms | fastest    370.1 | slowest    435.3 | 6 queries | db    387.0 ms
+Hotel list, sort by rating   median    391.7 ms | fastest    380.9 | slowest    400.5 | 6 queries | db    387.6 ms
+Hotel detail + chart data    median      4.7 ms | fastest      4.0 | slowest      7.1 | 2 queries | db      2.0 ms
+Dashboard stats              median     51.7 ms | fastest     45.8 | slowest     66.2 | 5 queries | db     24.1 ms
+
+=== after-index | 2026-10-24 07:38 | 907,280 rows | MySQL 8.4.3 ===
+Hotel list (default sort)    median    395.2 ms | fastest    382.4 | slowest    423.7 | 6 queries | db    391.1 ms
+Hotel list, Tokyo 4-star     median    385.5 ms | fastest    375.2 | slowest    393.3 | 6 queries | db    381.2 ms
+Hotel list, name search      median    389.7 ms | fastest    381.0 | slowest    414.1 | 6 queries | db    385.8 ms
+Hotel list, sort by rating   median    384.2 ms | fastest    373.3 | slowest    405.5 | 6 queries | db    380.5 ms
+Hotel detail + chart data    median      4.5 ms | fastest      3.9 | slowest      5.6 | 2 queries | db      1.7 ms
+Dashboard stats              median     62.2 ms | fastest     55.1 | slowest     73.0 | 5 queries | db     29.1 ms
+
