@@ -1,0 +1,221 @@
+/* ---------- Base (mobile first) ---------- */
+:root {
+    --brand: #0b6e99;
+    --brand-dark: #084f6e;
+    --bg: #f4f7fa;
+    --card: #ffffff;
+    --text: #1d2733;
+    --muted: #6b7885;
+    --border: #dbe2e8;
+    --good: #1a8f4c;
+    --radius: 12px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+/* ---------- Header ---------- */
+.site-header {
+    background: var(--brand);
+    color: #fff;
+    padding: 20px 16px;
+    text-align: center;
+}
+
+.site-header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.site-header p {
+    margin: 4px 0 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+/* ---------- Filters ---------- */
+.filters {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.filters input,
+.filters select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+}
+
+.filters input:focus,
+.filters select:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.btn-link {
+    margin-top: 10px;
+    background: none;
+    border: none;
+    color: var(--brand);
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Status line ---------- */
+.status {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    min-height: 1.3em;
+}
+
+/* ---------- Hotel cards ---------- */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.card .meta {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.card .stars {
+    color: #e8a317;
+    letter-spacing: 1px;
+}
+
+.card .score {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.card .price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+.card .price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--good);
+}
+
+.card .per-night {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+/* ---------- Pagination ---------- */
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin: 20px 0;
+}
+
+.pagination button {
+    min-width: 40px;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+    border-color: var(--brand);
+}
+
+.pagination button.active {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+}
+
+.pagination button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* ---------- Tablet ---------- */
+@media (min-width: 640px) {
+    .filter-row {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ---------- Desktop ---------- */
+@media (min-width: 960px) {
+    .filter-row {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
