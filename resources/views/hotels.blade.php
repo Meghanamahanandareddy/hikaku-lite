@@ -218,5 +218,6 @@
 <script src="{{ asset('js/main.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="{{ asset('js/hotels.js') }}"></script>
+<script src="{{ asset('js/dashboard.js') }}"></script>
 </body>
 </html>
