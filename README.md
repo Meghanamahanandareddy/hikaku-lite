@@ -1,58 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Hikaku Lite
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A hotel price comparison website. It shows the price of the same hotel on several booking sites, marks the cheapest one, shows the price history in a chart, and tells the visitor whether to book now or wait. It can also email a visitor when a price falls to their target.
 
-## About Laravel
+> **Note:** This is a demo project. The 4 booking sites (StayDeal, RoomHub, TripNest, BookEasy) are pretend, and all prices are sample data. Real booking sites give prices only to approved business partners. The system is built so that a real source can be added in the same way.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## What it does
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Search hotels by name or area, filter by city, stars, review score and price, sort five ways, and page through the results.
+- Shows each booking site's price for every hotel, the cheapest one marked **BEST**, and the change since yesterday.
+- A popup for each hotel with a 30 or 90-day price chart and a "good time to book" or "consider waiting" message.
+- A dashboard with counters (hotels tracked, sources, average best price, price drops today).
+- Prices refresh every 60 seconds without reloading the page.
+- Click a booking site to open its demo page.
+- **Price drop alerts:** the visitor enters an email and a target price, and gets an email when the price falls to it. Each email has a safe unsubscribe link.
+- Works on phones and computers (mobile first).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tech stack
 
-## Learning Laravel
+| Tool | Used for |
+|---|---|
+| PHP 8.3, Laravel 13 | Server code: routes, controllers, models, migrations, seeders, scheduler, email |
+| MySQL 8.4 | Database |
+| HTML, CSS, JavaScript, jQuery | Web pages |
+| Chart.js | Price charts |
+| Colorlib "Villa" (Bootstrap 4) | Page design and scroll effects |
+| Laragon, Composer, Git | Local setup and version control |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## How it works
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **2:00 AM every night:** a Laravel Scheduler job (`prices:ingest`) saves the new day's prices from the 4 sample sources and clears the hotel list cache.
+2. **2:10 AM:** a second job (`alerts:check`) emails visitors whose target price was reached. The same alert is not emailed again for 7 days.
+3. **A visitor opens the page:** jQuery asks the Laravel server for hotels, the server reads MySQL (or the cache) and replies with the prices.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Database
 
-## Agentic Development
+| Table | What it holds |
+|---|---|
+| `hotels` | Hotel name, city, area, stars, review score |
+| `sources` | The booking sites |
+| `price_snapshots` | One price for one hotel, one site and one day (unique key stops duplicates) |
+| `price_alerts` | Email, target price and when the visitor was last emailed |
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Speed test
 
-```bash
-composer require laravel/boost --dev
+I wanted to see if the site stays fast with a lot of data, so I made a command that adds about 900,000 test price rows (907,280 in total).
 
-php artisan boost:install
+| Request | Before the index | After the index |
+|---|---|---|
+| Hotel list | about 3.9 s | about 0.4 to 0.5 s (8 to 10 times faster) |
+| Dashboard numbers | about 2.3 s | about 0.05 to 0.06 s |
+
+How I measured: one warm-up run, then 10 timed runs, and I report the median. I found the slow query by timing each SQL query, used MySQL `EXPLAIN` to check how it reads the data, and added an index that starts with the date. The hotel list is also cached for 5 minutes.
+
+These numbers come from my own computer with generated test data, not from real visitors. They vary by about 5% between runs, and a little more between sessions.
+
+## Run it on your computer
+
+You need PHP 8.3 or newer, Composer and MySQL.
+
+```
+composer install
+copy .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Create an empty MySQL database named `hikaku_lite`, then set these lines in `.env`:
 
-## Contributing
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=hikaku_lite
+DB_USERNAME=root
+DB_PASSWORD=
+MAIL_MAILER=log
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Then:
 
-## Code of Conduct
+```
+php artisan migrate --seed
+php artisan serve
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Open http://127.0.0.1:8000. Alert emails are written to `storage/logs/laravel.log` instead of being sent.
 
-## Security Vulnerabilities
+## Useful commands
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Command | What it does |
+|---|---|
+| `php artisan prices:ingest` | Saves a new day of prices |
+| `php artisan alerts:check --dry-run` | Shows which alerts would be emailed |
+| `php artisan schedule:work` | Runs the nightly jobs locally |
+| `php artisan perf:load --hotels=2500` | Adds about 900,000 test price rows |
+| `php artisan perf:load --clear` | Removes the test data |
+| `php artisan perf:bench --label=name` | Measures how fast each request is |
+| `php artisan perf:queries` | Shows the time of each SQL query |
 
-## License
+After `migrate:fresh --seed` or `perf:load`, run `php artisan cache:clear`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Limits
+
+- Prices and booking sites are sample data.
+- Speed numbers are from one laptop with generated data.
+- The project runs locally. Deployment to AWS is planned.
+
+## Credits
+
+Page template: [Villa](https://colorlib.com) by Colorlib, licensed CC BY 3.0.
