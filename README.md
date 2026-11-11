@@ -102,7 +102,92 @@ After `migrate:fresh --seed` or `perf:load`, run `php artisan cache:clear`.
 ## Limits
 
 - Prices and booking sites are sample data.
-- Speed numbers are from one laptop with generated data.
+- Speed numbers are from one laptop with g# Hikaku Lite
+
+A hotel price comparison website. It shows the price of the same hotel on a few booking sites, marks the cheapest one, and shows a price chart so you can see if it is a good time to book. You can also set a target price and get an email when the price drops to it.
+
+The prices are sample data. Real booking sites only share prices with approved business partners, so I made four pretend ones (StayDeal, RoomHub, TripNest and BookEasy). The code is written so a real source could be added later.
+
+![Home page](docs/images/home-dashboard.png)
+
+## Screenshots
+
+![Hotel cards with the price on each site](docs/images/hotel-cards.png)
+
+![Hotel popup with the price chart](docs/images/hotel-popup.png)
+
+![Price drop email](docs/images/alert-email.png)
+
+## What it does
+
+- Search by hotel name or area, filter by city, stars, review score and price, sort, and page through the results.
+- Each hotel card lists the price on every site and marks the cheapest one.
+- Click a hotel to see a 30 or 90 day price chart and a short "book now or wait" hint.
+- Prices refresh every minute without reloading the page.
+- Price drop alerts by email, with an unsubscribe link.
+- Works on phones and computers.
+
+## Built with
+
+PHP 8.3 and Laravel 13, MySQL 8.4, HTML, CSS, JavaScript, jQuery and Chart.js. The page design starts from the free Villa template by Colorlib (CC BY 3.0).
+
+## How it works
+
+![How it works](docs/images/how-it-works.png)
+
+Every night at 2:00 AM a scheduled job saves the new day's prices and clears the cache. At 2:10 AM a second job emails people whose target price was reached. When someone opens the site, jQuery asks the Laravel server for hotels, and the server answers from the cache or from MySQL.
+
+## Database
+
+- `hotels`: name, city, area, stars and review score
+- `sources`: the booking sites
+- `price_snapshots`: one price for one hotel, one site and one day
+- `price_alerts`: email, target price and when the person was last emailed
+
+## Speed test
+
+I wanted to see how the site behaves with a lot of data, so I wrote a command that adds about 900,000 test price rows (907,280 in total).
+
+![Speed test results](docs/images/speed-test.png)
+
+The hotel list took about 3.9 seconds at first. I timed each SQL query, looked at how MySQL reads the data with `EXPLAIN`, and added an index that starts with the date. After that the list took about 0.4 to 0.5 seconds. The dashboard numbers went from about 2.3 seconds to about 0.06 seconds. I also cache the hotel list for 5 minutes.
+
+I took the median of 10 runs on my own laptop with generated data, so treat the numbers as a rough guide. They change by about 5% from run to run.
+
+## Run it locally
+
+You need PHP 8.3 or newer, Composer and MySQL.
+
+```
+composer install
+copy .env.example .env
+php artisan key:generate
+```
+
+Create an empty MySQL database called `hikaku_lite` and set these lines in `.env`:
+
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=hikaku_lite
+DB_USERNAME=root
+DB_PASSWORD=
+MAIL_MAILER=log
+```
+
+Then:
+
+```
+php artisan migrate --seed
+php artisan serve
+```
+
+Open http://127.0.0.1:8000. Emails are written to `storage/logs/laravel.log` instead of being sent. To add the large test data, run `php artisan perf:load`, and to measure speed run `php artisan perf:bench`.
+
+## Next
+
+Deploying it on AWS.enerated data.
 - The project runs locally. Deployment to AWS is planned.
 
 ## Credits
