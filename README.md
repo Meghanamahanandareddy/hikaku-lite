@@ -1,170 +1,176 @@
 # Hikaku Lite
 
-A hotel price comparison website. It shows the price of the same hotel on several booking sites, marks the cheapest one, shows the price history in a chart, and tells the visitor whether to book now or wait. It can also email a visitor when a price falls to their target.
+A hotel price comparison website. It shows the price of the same hotel on several booking sites, marks the cheapest one, and shows a price history chart so a visitor can decide whether to book now or wait. Visitors can also set a target price and get an email when it drops.
 
-> **Note:** This is a demo project. The 4 booking sites (StayDeal, RoomHub, TripNest, BookEasy) are pretend, and all prices are sample data. Real booking sites give prices only to approved business partners. The system is built so that a real source can be added in the same way.
-
-## What it does
-
-- Search hotels by name or area, filter by city, stars, review score and price, sort five ways, and page through the results.
-- Shows each booking site's price for every hotel, the cheapest one marked **BEST**, and the change since yesterday.
-- A popup for each hotel with a 30 or 90-day price chart and a "good time to book" or "consider waiting" message.
-- A dashboard with counters (hotels tracked, sources, average best price, price drops today).
-- Prices refresh every 60 seconds without reloading the page.
-- Click a booking site to open its demo page.
-- **Price drop alerts:** the visitor enters an email and a target price, and gets an email when the price falls to it. Each email has a safe unsubscribe link.
-- Works on phones and computers (mobile first).
-
-## Tech stack
-
-| Tool | Used for |
-|---|---|
-| PHP 8.3, Laravel 13 | Server code: routes, controllers, models, migrations, seeders, scheduler, email |
-| MySQL 8.4 | Database |
-| HTML, CSS, JavaScript, jQuery | Web pages |
-| Chart.js | Price charts |
-| Colorlib "Villa" (Bootstrap 4) | Page design and scroll effects |
-| Laragon, Composer, Git | Local setup and version control |
-
-## How it works
-
-1. **2:00 AM every night:** a Laravel Scheduler job (`prices:ingest`) saves the new day's prices from the 4 sample sources and clears the hotel list cache.
-2. **2:10 AM:** a second job (`alerts:check`) emails visitors whose target price was reached. The same alert is not emailed again for 7 days.
-3. **A visitor opens the page:** jQuery asks the Laravel server for hotels, the server reads MySQL (or the cache) and replies with the prices.
-
-## Database
-
-| Table | What it holds |
-|---|---|
-| `hotels` | Hotel name, city, area, stars, review score |
-| `sources` | The booking sites |
-| `price_snapshots` | One price for one hotel, one site and one day (unique key stops duplicates) |
-| `price_alerts` | Email, target price and when the visitor was last emailed |
-
-## Speed test
-
-I wanted to see if the site stays fast with a lot of data, so I made a command that adds about 900,000 test price rows (907,280 in total).
-
-| Request | Before the index | After the index |
-|---|---|---|
-| Hotel list | about 3.9 s | about 0.4 to 0.5 s (8 to 10 times faster) |
-| Dashboard numbers | about 2.3 s | about 0.05 to 0.06 s |
-
-How I measured: one warm-up run, then 10 timed runs, and I report the median. I found the slow query by timing each SQL query, used MySQL `EXPLAIN` to check how it reads the data, and added an index that starts with the date. The hotel list is also cached for 5 minutes.
-
-These numbers come from my own computer with generated test data, not from real visitors. They vary by about 5% between runs, and a little more between sessions.
-
-## Run it on your computer
-
-You need PHP 8.3 or newer, Composer and MySQL.
-
-```
-composer install
-copy .env.example .env
-php artisan key:generate
-```
-
-Create an empty MySQL database named `hikaku_lite`, then set these lines in `.env`:
-
-```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=hikaku_lite
-DB_USERNAME=root
-DB_PASSWORD=
-MAIL_MAILER=log
-```
-
-Then:
-
-```
-php artisan migrate --seed
-php artisan serve
-```
-
-Open http://127.0.0.1:8000. Alert emails are written to `storage/logs/laravel.log` instead of being sent.
-
-## Useful commands
-
-| Command | What it does |
-|---|---|
-| `php artisan prices:ingest` | Saves a new day of prices |
-| `php artisan alerts:check --dry-run` | Shows which alerts would be emailed |
-| `php artisan schedule:work` | Runs the nightly jobs locally |
-| `php artisan perf:load --hotels=2500` | Adds about 900,000 test price rows |
-| `php artisan perf:load --clear` | Removes the test data |
-| `php artisan perf:bench --label=name` | Measures how fast each request is |
-| `php artisan perf:queries` | Shows the time of each SQL query |
-
-After `migrate:fresh --seed` or `perf:load`, run `php artisan cache:clear`.
-
-## Limits
-
-- Prices and booking sites are sample data.
-- Speed numbers are from one laptop with g# Hikaku Lite
-
-A hotel price comparison website. It shows the price of the same hotel on a few booking sites, marks the cheapest one, and shows a price chart so you can see if it is a good time to book. You can also set a target price and get an email when the price drops to it.
-
-The prices are sample data. Real booking sites only share prices with approved business partners, so I made four pretend ones (StayDeal, RoomHub, TripNest and BookEasy). The code is written so a real source could be added later.
+![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?logo=php&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)
+![jQuery](https://img.shields.io/badge/jQuery-3.2-0769AD?logo=jquery&logoColor=white)
+![Team](https://img.shields.io/badge/team-individual-blue)
+![Status](https://img.shields.io/badge/status-in%20progress-orange)
 
 ![Home page](docs/images/home-dashboard.png)
 
+> **About the data:** all prices are sample data. Real booking sites only share prices with approved business partners, so the four sources (StayDeal, RoomHub, TripNest and BookEasy) are simulated. The code reads prices from a `sources` table, so a real source can be added the same way.
+
+## Project information
+
+| | |
+|---|---|
+| Type | Personal project |
+| Team size | Individual (1 developer) |
+| My role | Database design, backend, frontend and testing |
+| Started | October 2026 |
+| Status | In progress |
+
+## Contents
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Database](#database)
+- [API](#api)
+- [Scheduled jobs](#scheduled-jobs)
+- [Performance](#performance)
+- [Security](#security)
+- [Getting started](#getting-started)
+- [Project structure](#project-structure)
+- [Roadmap](#roadmap)
+- [Credits](#credits)
+
+## Features
+
+- Search by hotel name or area, filter by city, stars, review score and price, sort five ways, and page through results.
+- Every hotel card shows the price on each site, marks the cheapest one, and shows the change since yesterday.
+- A detail popup with a 30 or 90 day price chart and a short "book now or wait" recommendation.
+- A dashboard with live counters: hotels tracked, sources, average best price and price drops today.
+- Prices refresh every 60 seconds without reloading the page.
+- Price drop alerts: an email is sent when the best price reaches the visitor's target, with a one-click unsubscribe link.
+- Mobile-first layout that works on phones and computers.
+
 ## Screenshots
 
-![Hotel cards with the price on each site](docs/images/hotel-cards.png)
-
-![Hotel popup with the price chart](docs/images/hotel-popup.png)
+| Hotel cards | Hotel detail |
+|---|---|
+| ![Hotel cards with the price on each site](docs/images/hotel-cards.png) | ![Hotel popup with the price chart](docs/images/hotel-popup.png) |
 
 ![Price drop email](docs/images/alert-email.png)
 
-## What it does
+## Tech stack
 
-- Search by hotel name or area, filter by city, stars, review score and price, sort, and page through the results.
-- Each hotel card lists the price on every site and marks the cheapest one.
-- Click a hotel to see a 30 or 90 day price chart and a short "book now or wait" hint.
-- Prices refresh every minute without reloading the page.
-- Price drop alerts by email, with an unsubscribe link.
-- Works on phones and computers.
+| Layer | Technology |
+|---|---|
+| Backend | PHP 8.3, Laravel 13 (routing, Eloquent, migrations, scheduler, mail, cache) |
+| Database | MySQL 8.4 |
+| Frontend | HTML, CSS, JavaScript, jQuery 3.2, Chart.js |
+| Design | Villa template by Colorlib (Bootstrap 4, AOS) with custom styles |
+| Tooling | Laragon, Composer, Git |
 
-## Built with
-
-PHP 8.3 and Laravel 13, MySQL 8.4, HTML, CSS, JavaScript, jQuery and Chart.js. The page design starts from the free Villa template by Colorlib (CC BY 3.0).
-
-## How it works
+## Architecture
 
 ![How it works](docs/images/how-it-works.png)
 
-Every night at 2:00 AM a scheduled job saves the new day's prices and clears the cache. At 2:10 AM a second job emails people whose target price was reached. When someone opens the site, jQuery asks the Laravel server for hotels, and the server answers from the cache or from MySQL.
+A scheduled job saves new prices every night and clears the cache. A second job then checks the price alerts and sends emails. When a visitor opens the site, jQuery requests hotels from the Laravel API, which answers from the cache or from MySQL.
 
 ## Database
 
-- `hotels`: name, city, area, stars and review score
-- `sources`: the booking sites
-- `price_snapshots`: one price for one hotel, one site and one day
-- `price_alerts`: email, target price and when the person was last emailed
+```mermaid
+erDiagram
+    HOTELS ||--o{ PRICE_SNAPSHOTS : has
+    SOURCES ||--o{ PRICE_SNAPSHOTS : provides
+    HOTELS ||--o{ PRICE_ALERTS : "watched by"
 
-## Speed test
+    HOTELS {
+        bigint id PK
+        string name
+        string city
+        string area
+        tinyint star_rating
+        decimal review_score
+    }
+    SOURCES {
+        bigint id PK
+        string name
+        string slug
+        boolean is_active
+    }
+    PRICE_SNAPSHOTS {
+        bigint id PK
+        bigint hotel_id FK
+        bigint source_id FK
+        decimal price
+        date snapshot_date
+    }
+    PRICE_ALERTS {
+        bigint id PK
+        bigint hotel_id FK
+        string email
+        decimal target_price
+        boolean is_active
+        timestamp last_notified_at
+    }
+```
 
-I wanted to see how the site behaves with a lot of data, so I wrote a command that adds about 900,000 test price rows (907,280 in total).
+`price_snapshots` has a unique key on `(hotel_id, source_id, snapshot_date)`, so a price can never be saved twice for the same day, and indexes for price-history lookups and for the "latest day" queries.
+
+## API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/hotels` | Hotel list with search, filters, sorting, paging and the price on every site |
+| GET | `/api/hotels/{id}` | One hotel: 90-day history, statistics and the book-or-wait recommendation |
+| GET | `/api/stats` | Numbers for the dashboard counters |
+| POST | `/api/alerts` | Create or update a price drop alert (limited to 10 requests per minute) |
+| GET | `/alerts/{id}/unsubscribe` | One-click unsubscribe, protected by a signed URL |
+| GET | `/go/{hotel}/{source}` | Click-out page for a (simulated) booking site |
+
+Query parameters for `/api/hotels`: `q`, `city`, `stars`, `min_price`, `max_price`, `min_score`, `sort` (`price_asc`, `price_desc`, `rating`, `stars`, `name`), `per_page` and `page`.
+
+## Scheduled jobs
+
+| Time | Command | What it does |
+|---|---|---|
+| 02:00 | `prices:ingest` | Saves the new day's prices and clears the hotel list cache |
+| 02:10 | `alerts:check` | Emails visitors whose target was reached (at most once every 7 days per alert) |
+
+Both run through the Laravel scheduler, do not overlap with themselves, and write a log under `storage/logs/`. `alerts:check --dry-run` shows what would be sent without sending anything.
+
+## Performance
+
+To see how the site behaves with a lot of data, I wrote a command that adds about 900,000 test price rows (907,280 in total) and another that measures each request.
 
 ![Speed test results](docs/images/speed-test.png)
 
-The hotel list took about 3.9 seconds at first. I timed each SQL query, looked at how MySQL reads the data with `EXPLAIN`, and added an index that starts with the date. After that the list took about 0.4 to 0.5 seconds. The dashboard numbers went from about 2.3 seconds to about 0.06 seconds. I also cache the hotel list for 5 minutes.
+| Request | Before the index | After the index |
+|---|---|---|
+| Hotel list | about 3.9 s | about 0.4 to 0.5 s |
+| Dashboard numbers | about 2.3 s | about 0.06 s |
 
-I took the median of 10 runs on my own laptop with generated data, so treat the numbers as a rough guide. They change by about 5% from run to run.
+**Method:** one warm-up run, then 10 timed runs, and the median is reported. I timed every SQL query, checked how MySQL reads the data with `EXPLAIN`, and added a composite index that starts with `snapshot_date`. The hotel list is also cached for 5 minutes. The cache key contains a version number that the nightly job changes, so new prices show up straight away.
 
-## Run it locally
+**Limits:** the numbers come from one laptop with generated data, and they move by about 5% between runs. A second change that removed a table join from the main query made no measurable difference, so I did not count it as an improvement.
 
-You need PHP 8.3 or newer, Composer and MySQL.
+## Security
 
-```
+- All input is validated on the server, and text is escaped before it is shown on the page.
+- The alert form is limited to 10 requests per minute for each visitor.
+- Unsubscribe links are signed, so they cannot be guessed or changed.
+- Settings and secrets stay in `.env`, which is not committed.
+
+## Getting started
+
+Requirements: PHP 8.3 or newer, Composer and MySQL 8.
+
+```bash
+git clone https://github.com/Meghanamahanandareddy/hikaku-lite.git
+cd hikaku-lite
 composer install
-copy .env.example .env
+cp .env.example .env        # on Windows: copy .env.example .env
 php artisan key:generate
 ```
 
-Create an empty MySQL database called `hikaku_lite` and set these lines in `.env`:
+Create an empty database called `hikaku_lite`, then set these values in `.env`:
 
 ```
 DB_CONNECTION=mysql
@@ -176,20 +182,61 @@ DB_PASSWORD=
 MAIL_MAILER=log
 ```
 
-Then:
+Create the tables, add the sample data and start the server:
 
-```
+```bash
 php artisan migrate --seed
 php artisan serve
 ```
 
-Open http://127.0.0.1:8000. Emails are written to `storage/logs/laravel.log` instead of being sent. To add the large test data, run `php artisan perf:load`, and to measure speed run `php artisan perf:bench`.
+Open http://127.0.0.1:8000. With `MAIL_MAILER=log`, emails are written to `storage/logs/laravel.log` instead of being sent.
 
-## Next
+Useful commands:
 
-Deploying it on AWS.enerated data.
-- The project runs locally. Deployment to AWS is planned.
+```bash
+php artisan prices:ingest              # save a new day of prices
+php artisan alerts:check --dry-run     # show which alerts would be emailed
+php artisan schedule:work              # run the scheduled jobs locally
+php artisan perf:load --hotels=2500    # add about 900,000 test price rows
+php artisan perf:load --clear          # remove the test data
+php artisan perf:bench --label=run1    # measure request speed
+php artisan cache:clear                # run this after reseeding or loading test data
+```
+
+## Project structure
+
+```text
+app/
+  Console/Commands/    prices:ingest, alerts:check, perf:load, perf:bench, perf:queries
+  Http/Controllers/    HotelController, StatsController, AlertController, PartnerController
+  Mail/                PriceDropAlert
+  Models/              Hotel, Source, PriceSnapshot, PriceAlert
+database/
+  migrations/          the four tables and the price index
+  seeders/             sources, hotels and 90 days of prices
+public/
+  css/hikaku.css       custom styles
+  js/                  hotels.js (list, popup, chart, alerts), dashboard.js (counters)
+resources/views/       hotels, partner, unsubscribed, emails/price-drop
+routes/                web.php (routes), console.php (schedule)
+docs/images/           screenshots and diagrams
+```
+
+## Roadmap
+
+- [x] Database design, migrations and seeders
+- [x] Nightly price job and price alert job
+- [x] Search, filters, sorting and dashboard
+- [x] Price chart and book-or-wait recommendation
+- [x] Price drop emails with unsubscribe link
+- [x] Indexing, caching and performance measurements
+- [ ] Deploy on AWS (EC2 and RDS)
+- [ ] Send alert emails with Amazon SES
+- [ ] Serve static files with S3 and CloudFront
+- [ ] Automated tests
 
 ## Credits
 
-Page template: [Villa](https://colorlib.com) by Colorlib, licensed CC BY 3.0.
+Built by [@Meghanamahanandareddy](https://github.com/Meghanamahanandareddy).
+
+The page design is based on [Villa](https://colorlib.com) by Colorlib, licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Charts use [Chart.js](https://www.chartjs.org/).
