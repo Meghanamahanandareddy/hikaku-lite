@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Source;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -63,6 +64,10 @@ class IngestPrices extends Command
                 ['price', 'currency', 'updated_at']
             );
         }
+
+        // New prices are saved, so old cached hotel lists are out of date.
+        // A new version number makes every old cache key unused.
+        Cache::forever('prices_version', now()->format('YmdHis'));
 
         $message = 'Ingested '.count($rows)." prices for {$date}";
         $this->info($message);

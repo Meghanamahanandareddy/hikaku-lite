@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Hotel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class HotelController extends Controller
 {
+    // How long a cached hotel list is kept, in seconds
+    private const LIST_CACHE_SECONDS = 300;
+
     public function index(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -20,21 +24,44 @@ class HotelController extends Controller
             'min_score' => 'nullable|numeric|between:0,10',
             'sort'      => 'nullable|in:price_asc,price_desc,rating,stars,name',
             'per_page'  => 'nullable|integer|between:1,50',
+            'page'      => 'nullable|integer|min:1|max:10000',
         ]);
 
+        // The cache key uses only validated input, so random extra
+        // parameters cannot fill the cache with junk.
+        ksort($data);
+        $version = Cache::get('prices_version', '0');
+        $key = 'hotels:list:'.$version.':'.md5(json_encode($data));
+
+        $payload = Cache::remember(
+            $key,
+            self::LIST_CACHE_SECONDS,
+            fn () => $this->listPayload($data)
+        );
+
+        return response()->json($payload);
+    }
+
+    /**
+     * Builds the hotel list (the slow part). Its result is cached by index().
+     */
+    private function listPayload(array $data): array
+    {
         // Most recent day we have prices for, and the day before it
         $latestDate = DB::table('price_snapshots')->max('snapshot_date');
         $previousDate = DB::table('price_snapshots')
             ->where('snapshot_date', '<', $latestDate)
             ->max('snapshot_date');
 
-        // Cheapest price per hotel on the latest day (active sources only)
-        $current = DB::table('price_snapshots as ps')
-            ->join('sources as s', 's.id', '=', 'ps.source_id')
-            ->where('s.is_active', true)
-            ->where('ps.snapshot_date', $latestDate)
-            ->select('ps.hotel_id', DB::raw('MIN(ps.price) as best_price'))
-            ->groupBy('ps.hotel_id');
+        // Active sources: a tiny lookup, so the big query below needs no join
+        $activeSourceIds = DB::table('sources')->where('is_active', true)->pluck('id')->all();
+
+        // Cheapest price per hotel on the latest day
+        $current = DB::table('price_snapshots')
+            ->where('snapshot_date', $latestDate)
+            ->whereIn('source_id', $activeSourceIds)
+            ->select('hotel_id', DB::raw('MIN(price) as best_price'))
+            ->groupBy('hotel_id');
 
         $query = Hotel::query()
             ->joinSub($current, 'current_prices', 'current_prices.hotel_id', '=', 'hotels.id')
@@ -127,12 +154,10 @@ class HotelController extends Controller
             $hotel->setAttribute('prices', $prices);
         });
 
-        return response()->json(
-            array_merge($paginator->toArray(), [
-                'price_date'    => $latestDate,
-                'previous_date' => $previousDate,
-            ])
-        );
+        return array_merge($paginator->toArray(), [
+            'price_date'    => $latestDate,
+            'previous_date' => $previousDate,
+        ]);
     }
 
     /**
