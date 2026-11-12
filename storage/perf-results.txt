@@ -70,3 +70,27 @@ Hotel list, sort by rating   median      1.5 ms | fastest      1.1 | slowest    
 Hotel detail + chart data    median      5.9 ms | fastest      4.8 | slowest      7.2 | 2 queries | db      2.7 ms
 Dashboard stats              median     67.1 ms | fastest     60.9 | slowest     81.9 | 5 queries | db     32.6 ms
 
+=== cached | 2026-11-11 17:17 | 7,360 rows | MySQL 8.4.3 ===
+Hotel list (default sort)    median      1.1 ms | fastest      0.9 | slowest      2.5 | 2 queries | db      0.4 ms
+Hotel list, Tokyo 4-star     median      1.1 ms | fastest      0.9 | slowest      1.5 | 2 queries | db      0.4 ms
+Hotel list, name search      median      1.6 ms | fastest      1.1 | slowest      3.7 | 2 queries | db      0.7 ms
+Hotel list, sort by rating   median      1.2 ms | fastest      0.8 | slowest      1.7 | 2 queries | db      0.5 ms
+Hotel detail + chart data    median      4.2 ms | fastest      3.5 | slowest      4.7 | 2 queries | db      1.6 ms
+Dashboard stats              median      1.9 ms | fastest      1.6 | slowest      2.5 | 5 queries | db      1.2 ms
+
+=== cached | 2026-11-12 05:00 | 7,360 rows | MySQL 8.4.3 ===
+Hotel list (default sort)    median      1.9 ms | fastest      1.7 | slowest      3.5 | 2 queries | db      0.8 ms
+Hotel list, Tokyo 4-star     median      2.1 ms | fastest      1.6 | slowest      3.5 | 2 queries | db      0.9 ms
+Hotel list, name search      median      1.7 ms | fastest      1.6 | slowest      2.5 | 2 queries | db      0.7 ms
+Hotel list, sort by rating   median      1.8 ms | fastest      1.6 | slowest      3.3 | 2 queries | db      0.7 ms
+Hotel detail + chart data    median      7.5 ms | fastest      5.8 | slowest      8.7 | 2 queries | db      2.9 ms
+Dashboard stats              median      3.7 ms | fastest      3.1 | slowest      5.6 | 5 queries | db      2.4 ms
+
+=== cached | 2026-11-12 05:03 | 7,360 rows | MySQL 8.4.3 ===
+Hotel list (default sort)    median      1.7 ms | fastest      1.5 | slowest      2.8 | 2 queries | db      0.7 ms
+Hotel list, Tokyo 4-star     median      2.1 ms | fastest      1.9 | slowest      2.4 | 2 queries | db      0.9 ms
+Hotel list, name search      median      1.9 ms | fastest      1.7 | slowest      2.4 | 2 queries | db      0.9 ms
+Hotel list, sort by rating   median      1.7 ms | fastest      1.5 | slowest      3.4 | 2 queries | db      0.7 ms
+Hotel detail + chart data    median      7.6 ms | fastest      6.9 | slowest     10.4 | 2 queries | db      3.5 ms
+Dashboard stats              median      3.4 ms | fastest      3.1 | slowest      4.3 | 5 queries | db      2.3 ms
+
