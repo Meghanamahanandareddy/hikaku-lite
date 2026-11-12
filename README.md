@@ -51,12 +51,15 @@ A hotel price comparison website. It shows the price of the same hotel on severa
 
 ## Screenshots
 
-![Hotel cards with the price on each site](docs/images/hotel-cards.png)
 
-![Hotel popup with the price chart](docs/images/hotel-popup.png)
+<p align="center">
+  <img src="docs/images/hotel-cards.png" alt="Hotel cards with the price on each site" width="49%">
+  <img src="docs/images/hotel-popup.png" alt="Hotel popup with the price chart" width="49%">
+</p>
 
-![Price drop email](docs/images/alert-email.png)
-
+<p align="center">
+  <img src="docs/images/alert-email.png" alt="Price drop email" width="55%">
+</p>
 ## Tech stack
 
 | Layer | Technology |
