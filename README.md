@@ -51,9 +51,9 @@ A hotel price comparison website. It shows the price of the same hotel on severa
 
 ## Screenshots
 
-| Hotel cards | Hotel detail |
-|---|---|
-| ![Hotel cards with the price on each site](docs/images/hotel-cards.png) | ![Hotel popup with the price chart](docs/images/hotel-popup.png) |
+![Hotel cards with the price on each site](docs/images/hotel-cards.png)
+
+![Hotel popup with the price chart](docs/images/hotel-popup.png)
 
 ![Price drop email](docs/images/alert-email.png)
 
@@ -149,7 +149,7 @@ To see how the site behaves with a lot of data, I wrote a command that adds abou
 
 **Method:** one warm-up run, then 10 timed runs, and the median is reported. I timed every SQL query, checked how MySQL reads the data with `EXPLAIN`, and added a composite index that starts with `snapshot_date`. The hotel list is also cached for 5 minutes. The cache key contains a version number that the nightly job changes, so new prices show up straight away.
 
-**Limits:** the numbers come from one laptop with generated data, and they move by about 5% between runs. A second change that removed a table join from the main query made no measurable difference, so I did not count it as an improvement.
+**Limits:** the numbers come from one laptop with generated data, and they move by about 5% between runs. I also tried removing a table join from the main query, but I could not measure a clear difference, so I do not count it as an improvement.
 
 ## Security
 
